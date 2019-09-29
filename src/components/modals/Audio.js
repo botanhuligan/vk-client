@@ -1,43 +1,46 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { platform, IOS } from '@vkontakte/vkui';
 import Panel from '@vkontakte/vkui/dist/components/Panel/Panel';
 import PanelHeader from '@vkontakte/vkui/dist/components/PanelHeader/PanelHeader';
 import HeaderButton from '@vkontakte/vkui/dist/components/HeaderButton/HeaderButton';
 import Button from '@vkontakte/vkui/dist/components/Button/Button';
-import ModalRoot from '@vkontakte/vkui/dist/components/ModalRoot/ModalRoot';
-import ModalCard from '@vkontakte/vkui/dist/components/ModalCard/ModalCard';
-import Icon28ChevronBack from '@vkontakte/icons/dist/28/chevron_back';
+import ModalPage from '@vkontakte/vkui/dist/components/ModalPage/ModalPage';
+import ModalPageHeader from '@vkontakte/vkui/dist/components/ModalPageHeader/ModalPageHeader';
+import Input from '@vkontakte/vkui/dist/components/Input/Input';
+import Search from '@vkontakte/vkui/dist/components/Search/Search';
+import Icon24Camera from '@vkontakte/icons/dist/24/camera';
+import Icon24Play from '@vkontakte/icons/dist/24/play';
 import Icon24Back from '@vkontakte/icons/dist/24/back';
-
-import persik from '../../img/persik.png';
+import Start from '../icons/Start';
+import Stop from '../icons/Stop';
+import Camera from '../icons/Camera';
+import { connect, useDispatch } from "react-redux";
+import Chat from '../blocks/Chat'
+import { downloadAudio } from '../../utils'
+import Recorder from 'recorderjs'
 
 const osName = platform();
 
-const Audio = props => {
+const Audio = ({ id }) => {
+    const dispatch = useDispatch()
     const mediaSource = new MediaSource();
     mediaSource.addEventListener('sourceopen', handleSourceOpen, false);
     let mediaRecorder;
     let recordedBlobs;
     let sourceBuffer;
     let errorMsg = ''
-    let activeModal = 'videoModal'
-    let streaming = false
-    let width = 320;    // We will scale the photo width to this
-    let height = 0;     // This will be computed based on the input stream
+    let audioContext
+    let recorder
 
     const recordButton = document.querySelector('button#record');
-    // let canvas
-    // recordButton.addEventListener('click', () => {
-    //   if (recordButton.textContent === 'Start Recording') {
-    //     startRecording();
-    //   } else {
-    //     stopRecording();
-    //     recordButton.textContent = 'Start Recording';
-    //     playButton.disabled = false;
-    //     downloadButton.disabled = false;
-    //   }
-    // });
+
+    const [activeModal, setActiveModal] = useState(id)
+    const [recordButtonState, setRecordButtonState] = useState(true)
+
+    useEffect(() => {
+        startRecording()
+    });
 
     function play () {
       const superBuffer = new Blob(recordedBlobs, {type: 'video/webm'});
@@ -76,7 +79,8 @@ const Audio = props => {
       }
     }
 
-    function startRecording() {
+    async function startRecording() {
+      await init()
       recordedBlobs = [];
       let options = {mimeType: 'video/webm;codecs=vp9'};
       if (!MediaRecorder.isTypeSupported(options.mimeType)) {
@@ -104,7 +108,6 @@ const Audio = props => {
       }
 
       console.log('Created MediaRecorder', mediaRecorder, 'with options', options);
-      recordButton.textContent = 'Stop Recording';
       // playButton.disabled = true;
       // downloadButton.disabled = true;
       mediaRecorder.onstop = (event) => {
@@ -115,13 +118,15 @@ const Audio = props => {
       console.log('MediaRecorder started', mediaRecorder);
     }
 
-    function stopRecording() {
+    async function stopRecording() {
+      console.log('Recorded Blobs: ', recordedBlobs);
+      setRecordButtonState(!recordButtonState)
       mediaRecorder.stop();
+      // await downloadAudio(recordedBlobs)
       console.log('Recorded Blobs: ', recordedBlobs);
     }
 
     function handleSuccess(stream) {
-      recordButton.disabled = false;
       console.log('getUserMedia() got stream:', stream);
       window.stream = stream;
 
@@ -143,36 +148,64 @@ const Audio = props => {
       }
     }
 
+    function sendText () {
+
+    }
+
     return (
-        <Panel id={props.id}>
-            <PanelHeader
-                left={<HeaderButton onClick={props.go} data-to="home">
-                    {osName === IOS ? <Icon28ChevronBack/> : <Icon24Back/>}
-                </HeaderButton>}
-            >
-                Audio/Video
-            </PanelHeader>
-            <ModalRoot activeModal={'audioModal'}>
-                <ModalCard id={'errorModal'}>
-                    {{errorMsg}}
-                </ModalCard>
-                <ModalCard id='audioModal'>
-                    <audio id="gum" playsInline type="audio/ogg" muted autoPlay></audio>
-                    <audio id="recorded" playsInline type="audio/ogg" loop></audio>
-                    <Button size="l" onClick={() => init()}>Init</Button>
-                    <Button size="l" onClick={startRecording}>Start</Button>
-                    <Button size="l" onClick={stopRecording}>Stop</Button>
-                    <Button size="l" onClick={download}>Download</Button>
-                    <Button size="l" onClick={play}>Play</Button>
-                </ModalCard>
-            </ModalRoot>
-        </Panel>
+        <ModalPage
+            header={<ModalPageHeader>Найти</ModalPageHeader>}
+            id={activeModal}
+            title='Найти'
+            dynamicContentHeight={false}
+            settlingHeight={30}
+            onClose={stopRecording}
+            style={{height: '100%'}}
+        >
+            <audio id="gum" playsInline type="audio/ogg" muted autoPlay></audio>
+            <audio id="recorded" playsInline type="audio/ogg" loop></audio>
+            <br/>
+            <Search
+                autoComplete='off'
+                onChange={sendText}
+                type="text"
+                after=""
+                defaultValue="Петров" placeholder={'&#61442;Поиск'}
+            />
+            <br/><br/>
+            <Chat/>
+            <br/>
+            <div style={{display: 'flex', flexDirection: 'row', alignItems: 'stretch', paddingBottom: '30px'}}>
+                <div style={{width: '50%', textAlign: 'center'}}>
+                    <Button level="tertiary"
+                            onClick={stopRecording}
+                    >
+                    {!recordButtonState &&
+                    <Start color={'white'}/>
+                    }
+                    {recordButtonState &&
+                    <Stop color={'white'}/>
+                    }
+                    </Button>
+
+                    <div style={{fontSize: '14px', margin: '0 auto', width: '85px'}}>{recordButtonState ? 'Остановить' : 'Говорить'}</div>
+                </div>
+                <div style={{width: '50%', textAlign: 'center'}}>
+                    <Button level="tertiary"
+                            size="l"
+                            onClick={() => dispatch({ type: 'CHANGE_ACTIVE_MODAL', payload: 'photoModal' })}
+                    >
+                        <Camera/>
+                    </Button>
+                    <div style={{fontSize: '14px', margin: '0 auto', width: '85px'}}>Сделать фото</div>
+                </div>
+            </div>
+        </ModalPage>
     );
 }
 
 Audio.propTypes = {
 	id: PropTypes.string.isRequired,
-	go: PropTypes.func.isRequired,
 };
 
 export default Audio;

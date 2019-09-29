@@ -1,33 +1,29 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { platform, IOS } from '@vkontakte/vkui';
-import Panel from '@vkontakte/vkui/dist/components/Panel/Panel';
-import PanelHeader from '@vkontakte/vkui/dist/components/PanelHeader/PanelHeader';
-import HeaderButton from '@vkontakte/vkui/dist/components/HeaderButton/HeaderButton';
-import Icon28ChevronBack from '@vkontakte/icons/dist/28/chevron_back';
-import Icon24Back from '@vkontakte/icons/dist/24/back';
+import React, { useState } from 'react';
+import ModalRoot from '@vkontakte/vkui/dist/components/ModalRoot/ModalRoot';
+import Audio from '../modals/Audio';
+import Photo from '../modals/Photo';
+import {useSelector, useDispatch} from "react-redux";
 
-import persik from '../../img/persik.png';
-import './Persik.css';
+const ModalWrapper = props => {
+    const activeModal = useSelector(state => {
+        console.log('state', state.modals)
+        return state.modals.activeModal
+    })
+    const dispatch = useDispatch()
+    // const [activeModal, setActiveModal] = useState('audioModal')
+    console.log('activeModal', activeModal)
+    return (
+        <ModalRoot
+            activeModal={activeModal}
+            style={{height: '500px'}}
+        >
+            <Audio onClose={() => () => dispatch({ type: 'CHANGE_ACTIVE_MODAL', payload: null })} id={'audioModal'}></Audio>
+            <Photo onClose={() => () => dispatch({ type: 'CHANGE_ACTIVE_MODAL', payload: null })} id={'photoModal'}></Photo>
+        </ModalRoot>
+    );
+}
 
-const osName = platform();
-
-const Persik = props => (
-	<Panel id={props.id}>
-		<PanelHeader
-			left={<HeaderButton onClick={props.go} data-to="home">
-				{osName === IOS ? <Icon28ChevronBack/> : <Icon24Back/>}
-			</HeaderButton>}
-		>
-			Audio/Video
-		</PanelHeader>
-		<img className="Persik" src={persik} alt="Persik The Cat"/>
-	</Panel>
-);
-
-Persik.propTypes = {
-	id: PropTypes.string.isRequired,
-	go: PropTypes.func.isRequired,
+ModalWrapper.propTypes = {
 };
 
-export default Persik;
+export default ModalWrapper;

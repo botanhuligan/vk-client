@@ -10,20 +10,16 @@ import ModalCard from '@vkontakte/vkui/dist/components/ModalCard/ModalCard';
 import Icon28ChevronBack from '@vkontakte/icons/dist/28/chevron_back';
 import Icon24Back from '@vkontakte/icons/dist/24/back';
 
-import persik from '../../img/persik.png';
-
 const osName = platform();
 
-const Audio = props => {
+const Video = props => {
     const mediaSource = new MediaSource();
     mediaSource.addEventListener('sourceopen', handleSourceOpen, false);
     let mediaRecorder;
     let recordedBlobs;
     let sourceBuffer;
     let errorMsg = ''
-    let activeModal = 'videoModal'
 
-    const recordedVideo = document.querySelector('video#recorded');
     const recordButton = document.querySelector('button#record');
     // let canvas
     // recordButton.addEventListener('click', () => {
@@ -152,16 +148,15 @@ const Audio = props => {
                     {osName === IOS ? <Icon28ChevronBack/> : <Icon24Back/>}
                 </HeaderButton>}
             >
-                Audio/Video
+                Mira
             </PanelHeader>
-            <Button onClick={() => activeModal = 'video'}></Button>
-            <video id="gum" playsInline autoPlay muted></video>
-            <video id="recorded" playsInline loop></video>
             <ModalRoot activeModal={'videoModal'}>
                 <ModalCard id={'errorModal'}>
                     {{errorMsg}}
                 </ModalCard>
-                <ModalCard id='videoModal'>
+                <ModalCard id='videoModal' onClose={() => this.setActiveModal(null)}>
+                    <video id="gum" playsinline autoPlay muted></video>
+                    <video id="recorded" playsinline loop></video>
                     <Button size="l" onClick={() => init()}>Init</Button>
                     <Button size="l" onClick={startRecording}>Start</Button>
                     <Button size="l" onClick={stopRecording}>Stop</Button>
@@ -173,11 +168,10 @@ const Audio = props => {
     );
 }
 
-Audio.propTypes = {
+Video.propTypes = {
 	id: PropTypes.string.isRequired,
-	go: PropTypes.func.isRequired,
 };
 
-export default Audio;
+export default Video;
 
 
