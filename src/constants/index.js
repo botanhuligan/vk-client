@@ -1,0 +1,7 @@
+export const BASE_STT_URL = 'https://speech.googleapis.com/v1'
+export const BASE_STT_METHOD = '/speech:recognize'
+export const BASE_TTS_METHOD = '/speech:recognize'
+export const MESSAGE_RECEIVE_SERVER_URL = 'http://demo134.foxtrot.vkhackathon.com:9090/long_poll'
+export const MESSAGE_POST_SERVER_URL = 'http://demo134.foxtrot.vkhackathon.com:9080/message'
+export const STT_SERVER_URL = 'http://demo134.foxtrot.vkhackathon.com:9316/tts'
+export const TTS_SERVER_URL = 'http://demo134.foxtrot.vkhackathon.com:9316'

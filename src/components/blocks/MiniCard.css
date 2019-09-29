@@ -1,0 +1,8 @@
+.MiniCard {
+    height: 200;
+    display: 'flex';
+    alignItems: 'flex-end';
+    justifyContent: 'center';
+    paddingBottom: '6px';
+    borderRadius: 12;
+}
